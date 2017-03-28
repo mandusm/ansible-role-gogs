@@ -3,26 +3,14 @@
   file:
     path: "{{ gogs_user_home }}/{{ gogs_init_script_path }}"
     mode: 0755
+  when: ansible_os_family == 'Debian'
 
 - name: Symlink Gogs binary and startup scripts.
   file:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
-    state: link
+    state: hard
   with_items:
     - { src: "{{ gogs_user_home }}/gogs/gogs", dest: "/usr/local/bin/gogs" }
-    - { src: "{{ gogs_user_home }}/{{ gogs_init_script_path }}" , dest: "/etc/init.d/gogs" }
+    - { src: "{{ gogs_user_home }}/{{ gogs_init_script_path }}" , dest: "{{ gogs_init_dest_path }}" }
   notify: restart gogs
-
-- name: Copy Gogs systemd unit file into place (for systemd systems).
-  template:
-    src: gogs.unit.j2
-    dest: /etc/systemd/system/gogs.service
-    owner: root
-    group: root
-    mode: 0755
-  when: >
-    (ansible_distribution == 'Ubuntu' and ansible_distribution_version.split(".")[0]|int >= 16) or
-    (ansible_distribution == 'Debian' and ansible_distribution_version.split(".")[0]|int >= 8) or
-    (ansible_distribution == 'CentOS' and ansible_distribution_version.split(".")[0]|int >= 7) or
-    (ansible_distribution == 'Fedora')

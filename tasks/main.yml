@@ -49,5 +49,11 @@
     group: "{{ gogs_user }}"
     mode: 0755
 
-- name: Ensure Gogs is running.
+- name: Ensure Gogs is running on Debian.
   service: name=gogs state=started enabled=yes
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure Gogs is running in RedHat
+  systemd: name=gogs state=started enabled=yes
+  when: ansible_os_family == 'RedHat'
+
